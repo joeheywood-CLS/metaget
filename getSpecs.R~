@@ -1,7 +1,7 @@
 library(readxl)
 library(rjson)
 
-currentSpecFile <- "n:/bcs70/sweep10/spec/BCS46_DataDocumentation-Substantive_Interim_NatCen_03_20170215.xlsx"
+currentSpecFile <- "n:/bcs70/sweep10/BCS46_DataDocumentation-Substantive_Interim_NatCen_03_20170215.xlsx"
 
 ######
 vars <- read_excel(currentSpecFile, sheet = 2)
@@ -25,22 +25,19 @@ getVarsFromModule <- function(mdl, vls) {
 
 getIndVar <- function(row, vls) {
     vals <- vls[which(vls$VARNAME == row["VARNAME"]), c("CODE", "CODELABEL")]
-    ctg <- data.frame(code = vals$CODE, label = vals$CODELABEL,
-                      stringsAsFactors = FALSE, row.names = NULL)
-    if(nrow(ctg) == 0) {
-        ctg <- data.frame(code = -99, label = "no labels", stringsAsFactors = FALSE, row.names = NULL)
-    }
-    ctg$missing = FALSE
+    lbls <- vals$CODE
+    names(lbls) <- vals$CODELABEL
     list(
         vName = row["VARNAME"],
         varLabel = row["LABEL"],
         format = row["FORMAT"],
-        ctg = ctg
+        valLabels = lbls,
+        missings = c()
     )
 }
-spec$modules <- getModules(vars, vls)
+spec$vars <- getModules(vars, vls)
 
-cat(toJSON(spec ), file = "n:/bcs70/sweep10/json/spec.json")
+cat(toJSON(spec ), file = "spec.json")
 
 
 
