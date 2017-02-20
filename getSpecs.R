@@ -1,7 +1,12 @@
 library(readxl)
 library(rjson)
 
-currentSpecFile <- "n:/bcs70/sweep10/spec/BCS46_DataDocumentation-Substantive_Interim_NatCen_03_20170215.xlsx"
+## get some args from config file
+conf <- config::get(file =  "~/bcsconfig.yaml")
+
+
+currentSpecFile <- paste0(conf$root,
+    "/spec/BCS46_DataDocumentation-Substantive_Interim_NatCen_03_20170215.xlsx")
 
 ######
 vars <- read_excel(currentSpecFile, sheet = 2)
@@ -40,7 +45,7 @@ getIndVar <- function(row, vls) {
 }
 spec$modules <- getModules(vars, vls)
 
-cat(toJSON(spec ), file = "n:/bcs70/sweep10/json/spec.json")
+cat(toJSON(spec ), file = paste0(conf$root, "/json/spec.json"))
 
 
 

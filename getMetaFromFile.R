@@ -87,10 +87,10 @@ mapSpecModuleToMeta <- function(mn, mod, modName) {
 }
 
 getComparisonObject <- function(a) {
-    spc <- data.frame(code = as.character(a$spec$ctg$code), spcLabel = a$spec$ctg$label,
-                      stringsAsFactors=F)
+    spc <- data.frame(code = as.character(a$spec$ctg$code),
+                      spcLabel = a$spec$ctg$label, stringsAsFactors=FALSE)
     ma <- data.frame(code = as.character(a$ctg$code), mnLabel = a$ctg$label,
-                     frq = as.numeric(unlist(a$ctg$Freq)), stringsAsFactors=F)
+                     frq = as.numeric(unlist(a$ctg$Freq)), stringsAsFactors=FALSE)
     frqTab = full_join(ma, spc)
     list(vName = a$vName, varLabel = a$varLabel, format = a$format, frqTab = frqTab)
 }
@@ -100,12 +100,15 @@ getComparisonObject <- function(a) {
 ## This shoule be replicated and adjusted to other clusters of variables. But
 ## for now it's just loops with an ordinal number at the end.
 
+
+
 assignToLoop <- function(root, jsn) {
-    loopNode <- list(root = root)
-    indVars <- names(jsn)[grepl(paste(root, "\\d$"), names(jsn))]
+    loopNode <- list(root = root, type = root)
+    indVars <- names(jsn)[which(grepl(paste0(root, "\\d+$"), names(jsn)))]
     loopNode$labels <- rep("", length(indVars))
     names(loopNode$labels) <- indVars
-    loopNode$ctg <- data.frame(code = jsn[[indVars[1]]]$ctg$code, stringsAsFactors = FALSE)
+    loopNode$ctg <- data.frame(code = jsn[[indVars[1]]]$ctg$code,
+                               stringsAsFactors = FALSE)
     for(vr in indVars) {
         ind <- jsn[[vr]]
         ctg <- ctgToDF(ind$ctg) %>% select(code, Freq)
@@ -113,8 +116,20 @@ assignToLoop <- function(root, jsn) {
         loopNode$ctg <- full_join(loopNode$ctg, ctg)
         loopNode$labels[vr] <- ind$varLabel
     }
+    loopNode$ctg <- transposeCtg(loopNode$ctg, loopNode$labels)
     loopNode
 }
+
+transposeCtg <- function(ctg, lb) {
+    save(ctg, file = "debug.Rda")
+    ctg <- as.data.frame(t(ctg))
+    ctg <- ctg[-1, which(ctg[1, ] == -1 | ctg[1, ] == 1)]
+    ctg$code <- row.names(ctg)
+    ctg$label <- as.character(unlist(lb[row.names(ctg)]))
+    ctg
+
+}
+
 
 ctgToDF <- function(ctg) {
     out <- data.frame(code = ctg$code, label = ctg$label, stringsAsFactors = FALSE)
