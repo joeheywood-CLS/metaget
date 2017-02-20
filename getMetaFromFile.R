@@ -97,13 +97,35 @@ getComparisonObject <- function(a) {
 
 
 
-## This shoule be replicated and adjusted to other clusters of variables. But
+## This should be replicated and adjusted to other clusters of variables. But
 ## for now it's just loops with an ordinal number at the end.
+modToShiny <- function(a, jsn) {
+    a <- unique(gsub("\\d$", "__loop", a))
+    out <- list()
+    cont <- list()
+    for(aa in a) {
+        if(grepl("__loop", aa) == TRUE) {
+            aa <- gsub("__loop", "", aa)
+            out[[aa]] <- assignToLoop(aa, jsn)
+            cont[[aa]] <- "loop"
+        } else {
+            out[[aa]] <- assignSingle(aa, jsn)
+            cont[[aa]] <- "single"
+        }
+    }
+    list(tree = cont, dat = out)
+}
+
+assignSingle <- function(vrb, jsn) {
+    m <- jsn[[vrb]]
+    list(root = m$vName, type = m$frq$carType, labels = m$varLabel, ctg = ctgToDF(m$ctg))
+}
+
 
 
 
 assignToLoop <- function(root, jsn) {
-    loopNode <- list(root = root, type = root)
+    loopNode <- list(root = root, type = "loop")
     indVars <- names(jsn)[which(grepl(paste0(root, "\\d+$"), names(jsn)))]
     loopNode$labels <- rep("", length(indVars))
     names(loopNode$labels) <- indVars
@@ -121,13 +143,14 @@ assignToLoop <- function(root, jsn) {
 }
 
 transposeCtg <- function(ctg, lb) {
-    save(ctg, file = "debug.Rda")
+    save(ctg, lb, file = "debug.Rda")
     ctg <- as.data.frame(t(ctg))
     ctg <- ctg[-1, which(ctg[1, ] == -1 | ctg[1, ] == 1)]
     ctg$code <- row.names(ctg)
     ctg$label <- as.character(unlist(lb[row.names(ctg)]))
-    ctg
-
+    colnames(ctg)[1:2] <- c("NotApplicable", "Freq")
+    row.names(ctg) <- NULL
+    ctg[, c("code", "label", "Freq", "NotApplicable")]
 }
 
 
