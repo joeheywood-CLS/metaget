@@ -18,48 +18,46 @@ changeModule <- function(mod) {
     md <- modToShiny(names(a), mp)
     save(md, a, file = "md.Rda")
     print("-----------------------------------")
+    list(md = md, a = a)
 }
 
 loadModule <- function() {
     load("md.Rda")
     list(md = md, a = a)
 }
-
+y <- loadModule()
 
 source("../getMetaFromFile.R")
 #md <- modToShiny(names(a), mp)
 
-# Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
-    y <- loadModule()
-    output$tree <- renderTree({y$md$tree})
+
     updateSelectizeInput(session, "mods", choices = names(spc$modules))
     output$tx <- renderText({
         if(input$mods %in% names(spc$modules)) {
-            changeModule(input$mods)
-            y <- loadModule()
-            output$tree <- renderTree({y$md$tree})
-            input$mods
+            y <- changeModule(input$mods)
+            updateSelectizeInput(session, "qns", choices = names(y$md$dat))
+            dd <- data.frame(qns = names(y$md$dat), stringsAsFactors = FALSE)
+            output$qnTab <- renderDataTable(dd )
+            "Module selected"
         } else {
             "None selected"
         }
-
     })
 
+    output$lbl <- renderText({input$qnTab_rows_selected})
+
     output$tst <- renderText({
-        print(".. [getting selection] ..")
-        tre <- input$tree
-        if(is.null(tre)) {
-            "None"
-        } else {
-                #a <- unlist(get_selected(tre))
-                #lbl <- unlist(md$dat[[a]]$labels)[1]
-                #output$lbl <- renderText({lbl})
-                #output$vrbNm <- renderText({a})
-                #output$vrbLbl <- renderText({lbl})
-                #output$vrbType <- renderText({md$dat[[a]]$type})
-                #output$ctg <- renderDataTable({md$dat[[a]]$ctg})
-                unlist(get_selected(tre))
-        }
+        y <- loadModule()
+        aa <- as.numeric(input$qnTab_rows_selected[1]) ##input$qns
+        a <- names(y$md$dat)[aa]
+        save(aa, a, y, file = "debug.Rda")
+        lbl <- unlist(y$md$dat[[a]]$labels)[1]
+        ##output$lbl <- renderText({lbl})
+        output$vrbNm <- renderText({a})
+        output$vrbLbl <- renderText({lbl})
+        output$vrbType <- renderText({y$md$dat[[a]]$type})
+        output$ctg <- renderDataTable({y$md$dat[[a]]$ctg})
+        a
     })
 })

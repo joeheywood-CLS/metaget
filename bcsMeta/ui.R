@@ -24,10 +24,12 @@ shinyUI(navbarPage(
                         div(
                             h3("sideBar"),
                             selectizeInput("mods", choices = NULL, label = "Modules"),
-                            shinyTree("tree"),
+                            ## shinyTree("tree"), ## got rid of this. didn't work
+                            selectizeInput("qns", choices = NULL, label = "Questions"),
                             p(textOutput("tst")),
                             p(textOutput("lbl")),
-                            p(textOutput("tx"))
+                            p(textOutput("tx")),
+                            dataTableOutput("qnTab")
                         )
                         ),
                  column(7,
