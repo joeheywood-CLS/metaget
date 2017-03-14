@@ -118,7 +118,8 @@ modToShiny <- function(a, jsn) {
 
 assignSingle <- function(vrb, jsn) {
     m <- jsn[[vrb]]
-    list(root = m$vName, type = m$frq$carType, labels = m$varLabel, ctg = ctgToDF(m$ctg))
+    m <- jsn[[vrb]]
+    list(root = m$vName, type = "single", labels = m$varLabel, ctg = ctgToDF(m$ctg))
 }
 
 
@@ -177,4 +178,3 @@ ctgToDF <- function(ctg) {
 ## - Loop Yes/No
 ##
 ## Other Numeric
-## - Date subvars: y/m/d (Day of week?)

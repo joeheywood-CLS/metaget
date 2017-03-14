@@ -37,9 +37,8 @@ shinyServer(function(input, output, session) {
         if(input$mods %in% names(spc$modules)) {
             y <- changeModule(input$mods)
             updateSelectizeInput(session, "qns", choices = names(y$md$dat))
-            ##dd <- data.frame(qns = names(y$md$dat), stringsAsFactors = FALSE)
-            ##output$qnTab <- renderDataTable(dd )
-            updateRadioButtons(session, "qnRad", choices = names(y$md$dat), selected = 1)
+            dd <- data.frame(qns = names(y$md$dat), stringsAsFactors = FALSE)
+            output$qnTab <- renderDataTable(dd )
             "Module selected"
         } else {
             "None selected"
@@ -50,25 +49,15 @@ shinyServer(function(input, output, session) {
 
     output$tst <- renderText({
         y <- loadModule()
-        print(input$qnRad)
-        aa <- as.numeric(input$qnRad) ##input$qns
-        a <- input$qnRad ##names(y$md$dat)[aa]
+        aa <- as.numeric(input$qnTab_rows_selected[1]) ##input$qns
+        a <- names(y$md$dat)[aa]
         save(aa, a, y, file = "debug.Rda")
         lbl <- unlist(y$md$dat[[a]]$labels)[1]
         ##output$lbl <- renderText({lbl})
         output$vrbNm <- renderText({a})
         output$vrbLbl <- renderText({lbl})
         output$vrbType <- renderText({y$md$dat[[a]]$type})
-        ctg <- y$md$dat[[a]]$ctg
-        if(y$md$dat[[a]]$type == "loop") {
-            mss <- data.frame(mss=ctg$NotApplicable[1])
-            ctg <- ctg[, which(colnames(ctg) != "NotApplicable")] #
-        } else {
-            mss <- ctg[which(as.numeric(ctg$code) < 0),]
-            ctg <- ctg[which(as.numeric(ctg$code) >= 0),]
-        }
-        output$ctg <- renderDataTable(ctg, options = list(paging = FALSE, searching = FALSE))
-        output$mss <- renderDataTable(mss, options = list(paging = FALSE, searching = FALSE))
+        output$ctg <- renderDataTable({y$md$dat[[a]]$ctg})
         a
     })
 })
