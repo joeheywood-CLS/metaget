@@ -74,3 +74,9 @@ joinLists <- function(x) {
     list(q = qn, m = m, s = s)
 }
 
+
+
+out <- runAll(bd)
+j <- lapply(1:length(out), joinLists)
+ko <- vapply(1:length(out), function(x)out[[x]]$vName, "")
+save(j, ko, file = "forShiny.Rda")
